@@ -1,4 +1,3 @@
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,6 +14,15 @@ public class Client {
         this.port = port;
     }
 
+    public static void main(String[] args) throws IOException {
+        try {
+            Client client = new Client(InetAddress.getLocalHost(), 15797);
+            client.execute();
+        } catch (Exception ig) {
+            System.out.println("Lỗi kết nối");
+        }
+    }
+
     private void execute() throws IOException {
         //Phần bổ sung
         Scanner sc = new Scanner(System.in);
@@ -27,15 +35,9 @@ public class Client {
         WriteClient write = new WriteClient(client, name);
         write.start();
     }
-
-
-    public static void main(String[] args) throws IOException {
-        Client client = new Client(InetAddress.getLocalHost(), 15797);
-        client.execute();
-    }
 }
 
-class ReadClient extends Thread{
+class ReadClient extends Thread {
     private Socket client;
 
     public ReadClient(Socket client) {
@@ -47,22 +49,19 @@ class ReadClient extends Thread{
         DataInputStream dis = null;
         try {
             dis = new DataInputStream(client.getInputStream());
-            while(true) {
+            while (true) {
                 String sms = dis.readUTF();
-                System.out.println(sms);
+                if (!sms.isEmpty())
+                    System.out.println(sms);
             }
         } catch (Exception e) {
-            try {
-                dis.close();
-                client.close();
-            } catch (IOException ex) {
-                System.out.println("Ngắt kết nối Server");
-            }
+            System.out.println("Đã mất kết nối Server");
+            System.exit(0);
         }
     }
 }
 
-class WriteClient extends Thread{
+class WriteClient extends Thread {
     private Socket client;
     private String name;
 
@@ -78,17 +77,14 @@ class WriteClient extends Thread{
         try {
             dos = new DataOutputStream(client.getOutputStream());
             sc = new Scanner(System.in);
-            while(true) {
+            while (true) {
                 String sms = sc.nextLine();
-                dos.writeUTF(name + ": " + sms);
+                if (!sms.isEmpty())
+                    dos.writeUTF(name + ": " + sms);
             }
         } catch (Exception e) {
-            try {
-                dos.close();
-                client.close();
-            } catch (IOException ex) {
-                System.out.println("Ngắt kết nối Server");
-            }
+            System.out.println("Đã mất kết nối Server");
+            System.exit(0);
         }
     }
 
